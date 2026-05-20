@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  image        String?
+  balance      Float         @default(1000)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  positions    Position[]
+  transactions Transaction[]
+  accounts     Account[]
+  sessions     Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id        String   @id @default(cuid())
+  teamA     String
+  teamB     String
+  date      DateTime
+  status    String   @default("upcoming") // upcoming, live, completed
+  createdAt DateTime @default(now())
+  markets   Market[]
+}
+
+model Market {
+  id              String        @id @default(cuid())
+  matchId         String
+  question        String
+  status          String        @default("open") // open, locked, settled, voided
+  type            String        @default("binary") // binary, multi
+  k               Float         // AMM invariant
+  resolvedOutcome String?
+  createdAt       DateTime      @default(now())
+  match           Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  outcomes        Outcome[]
+  positions       Position[]
+  transactions    Transaction[]
+}
+
+model Outcome {
+  id           String        @id @default(cuid())
+  marketId     String
+  label        String
+  poolShares   Float
+  market       Market        @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  positions    Position[]
+  transactions Transaction[]
+}
+
+model Position {
+  id        String  @id @default(cuid())
+  userId    String
+  marketId  String
+  outcomeId String
+  shares    Float   @default(0)
+  avgPrice  Float   @default(0)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market    Market  @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  outcome   Outcome @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, marketId, outcomeId])
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  marketId  String
+  outcomeId String
+  type      String   // buy, sell, payout, refund
+  shares    Float
+  coins     Float
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  market    Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  outcome   Outcome  @relation(fields: [outcomeId], references: [id], onDelete: Cascade)
+}
