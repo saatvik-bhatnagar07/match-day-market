@@ -71,7 +71,7 @@ export function SettleMarketDialog({
             </Button>
           )}
           <div className="space-y-2">
-            <Select value={selectedOutcome} onValueChange={setSelectedOutcome}>
+            <Select value={selectedOutcome} onValueChange={(v) => v && setSelectedOutcome(v)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select winning outcome" />
               </SelectTrigger>

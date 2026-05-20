@@ -69,7 +69,7 @@ export default function AdminPage() {
                   <Badge variant="outline">{match.status}</Badge>
                   <Select
                     value={match.status}
-                    onValueChange={(v) => updateMatchStatus(match.id, v)}
+                    onValueChange={(v) => v && updateMatchStatus(match.id, v)}
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue />

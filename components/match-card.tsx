@@ -6,7 +6,7 @@ type Match = {
   id: string;
   teamA: string;
   teamB: string;
-  date: string;
+  date: string | Date;
   status: string;
   markets: { id: string; status: string }[];
 };
