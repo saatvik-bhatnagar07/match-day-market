@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { CreateMatchForm } from "@/components/admin/create-match-form";
+import { CreateMarketForm } from "@/components/admin/create-market-form";
+import { SettleMarketDialog } from "@/components/admin/settle-market-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -92,7 +94,12 @@ export default function AdminPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">{market.question}</span>
-                    <Badge>{market.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge>{market.status}</Badge>
+                      {(market.status === "open" || market.status === "locked") && (
+                        <SettleMarketDialog market={market} onSettled={loadMatches} />
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     {market.outcomes.map((o) => (
@@ -103,6 +110,7 @@ export default function AdminPage() {
                   </div>
                 </div>
               ))}
+              <CreateMarketForm matchId={match.id} onCreated={loadMatches} />
             </CardContent>
           </Card>
         ))}
