@@ -8,7 +8,7 @@ export async function GET() {
     const matches = await prisma.match.findMany({
       include: {
         markets: {
-          select: { id: true, status: true },
+          include: { outcomes: true },
         },
       },
       orderBy: { date: "desc" },
