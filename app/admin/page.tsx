@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { CreateMatchForm } from "@/components/admin/create-match-form";
 import { CreateMarketForm } from "@/components/admin/create-market-form";
 import { SettleMarketDialog } from "@/components/admin/settle-market-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -55,7 +57,12 @@ export default function AdminPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Admin Panel</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <Link href="/admin/users">
+          <Button variant="outline">Manage Users</Button>
+        </Link>
+      </div>
       <CreateMatchForm onCreated={loadMatches} />
       <div className="space-y-6">
         {matches.map((match) => (
