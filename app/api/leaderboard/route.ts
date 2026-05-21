@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequiredSession } from "@/lib/auth";
-import { getPrices, PAYOUT_PER_SHARE } from "@/lib/amm";
+import { getSellReturn } from "@/lib/amm";
 
 export async function GET() {
   try {
@@ -29,11 +29,11 @@ export async function GET() {
 
         for (const pos of user.positions) {
           const pools = pos.market.outcomes.map((o) => o.poolShares);
-          const prices = getPrices(pools);
           const idx = pos.market.outcomes.findIndex(
             (o) => o.id === pos.outcomeId
           );
-          positionValue += pos.shares * prices[idx] * PAYOUT_PER_SHARE;
+          const { coinsReturned } = getSellReturn(pools, idx, pos.shares);
+          positionValue += coinsReturned;
           activePositions++;
         }
 

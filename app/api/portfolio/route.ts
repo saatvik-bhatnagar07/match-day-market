@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequiredSession } from "@/lib/auth";
-import { getPrices, PAYOUT_PER_SHARE } from "@/lib/amm";
+import { getPrices, getSellReturn } from "@/lib/amm";
 
 export async function GET() {
   try {
@@ -28,7 +28,7 @@ export async function GET() {
         (o) => o.id === pos.outcomeId
       );
       const currentPrice = prices[outcomeIndex];
-      const currentValue = pos.shares * currentPrice * PAYOUT_PER_SHARE;
+      const { coinsReturned: currentValue } = getSellReturn(pools, outcomeIndex, pos.shares);
       const costBasis = pos.shares * pos.avgPrice;
 
       return {
