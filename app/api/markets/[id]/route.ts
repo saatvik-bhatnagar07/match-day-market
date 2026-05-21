@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequiredSession, getRequiredAdmin } from "@/lib/auth";
-import { getPrices, PAYOUT_PER_SHARE } from "@/lib/amm";
+import { getPrices } from "@/lib/amm";
 
 export async function GET(
   _request: Request,
@@ -78,12 +78,34 @@ async function settleMarket(marketId: string, winningOutcomeId: string) {
       data: { status: "settled", resolvedOutcome: winningOutcomeId },
     });
 
+    // Total coins spent across all buy transactions in this market
+    const buyTotal = await tx.transaction.aggregate({
+      where: { marketId, type: "buy" },
+      _sum: { coins: true },
+    });
+    // Subtract coins returned via sells
+    const sellTotal = await tx.transaction.aggregate({
+      where: { marketId, type: "sell" },
+      _sum: { coins: true },
+    });
+    const totalPool = (buyTotal._sum.coins ?? 0) - (sellTotal._sum.coins ?? 0);
+
     const winningPositions = await tx.position.findMany({
       where: { marketId, outcomeId: winningOutcomeId, shares: { gt: 0 } },
     });
 
+    // Total winning shares for proportional split
+    const totalWinningShares = winningPositions.reduce(
+      (sum, pos) => sum + pos.shares,
+      0
+    );
+
     for (const pos of winningPositions) {
-      const payout = pos.shares * PAYOUT_PER_SHARE;
+      // Each winner gets their proportion of the total pool
+      const payout =
+        totalWinningShares > 0
+          ? (pos.shares / totalWinningShares) * totalPool
+          : 0;
       await tx.user.update({
         where: { id: pos.userId },
         data: { balance: { increment: payout } },

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { getBuyShares, PAYOUT_PER_SHARE } from "@/lib/amm";
+import { getBuyShares, getSellReturn } from "@/lib/amm";
 import { toast } from "sonner";
 
 export function BetSlip({
@@ -32,11 +32,12 @@ export function BetSlip({
   const estimate = useMemo(() => {
     const coins = Number(amount);
     if (!coins || coins <= 0) return null;
-    const { shares } = getBuyShares(pools, outcomeIndex, coins);
+    const { shares, newPools } = getBuyShares(pools, outcomeIndex, coins);
+    const { coinsReturned } = getSellReturn(newPools, outcomeIndex, shares);
     return {
       shares,
       avgPrice: coins / shares,
-      potentialPayout: shares * PAYOUT_PER_SHARE,
+      sellBackValue: coinsReturned,
     };
   }, [amount, pools, outcomeIndex]);
 
@@ -105,9 +106,9 @@ export function BetSlip({
               <span>{estimate.avgPrice.toFixed(2)} coins</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Potential payout</span>
+              <span className="text-muted-foreground">Sell-back value</span>
               <span className="text-green-500 font-semibold">
-                {estimate.potentialPayout.toFixed(0)} coins
+                {estimate.sellBackValue.toFixed(0)} coins
               </span>
             </div>
           </div>
