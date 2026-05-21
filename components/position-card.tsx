@@ -96,6 +96,13 @@ export function PositionCard({
                   max={position.shares}
                   step="0.01"
                 />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setSellAmount(position.shares.toFixed(2))}
+                >
+                  All
+                </Button>
                 <Button size="sm" onClick={handleSell} disabled={loading}>
                   {loading ? "..." : "Confirm"}
                 </Button>

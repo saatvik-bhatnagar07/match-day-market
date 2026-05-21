@@ -136,8 +136,13 @@ async function handleSell(
         userId_marketId_outcomeId: { userId, marketId, outcomeId },
       },
     });
-    if (!position || position.shares < sharesToSell) {
+    if (!position || position.shares < sharesToSell - 0.001) {
       throw new Error("Insufficient shares");
+    }
+
+    // Snap to actual shares if selling approximately all
+    if (Math.abs(sharesToSell - position.shares) < 0.01) {
+      sharesToSell = position.shares;
     }
 
     const market = await tx.market.findUniqueOrThrow({
